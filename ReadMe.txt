@@ -1,0 +1,2 @@
+This project contains examples of different programming concepts. So far I've started working on DataStructures like a basic Dictionary, I'm not sure how far I'll take this 
+project but it seemed like something fun to do for practice. The classes will be coded using TDD methodology and I'm using Visual Studio 2019 Community edition.

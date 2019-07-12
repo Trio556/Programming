@@ -7,8 +7,9 @@ namespace Programming.DataStructure
 {
     public class Dictionary<tkey, tvalue> : IEnumerable<KeyValuePair<tkey, tvalue>>
     {
-        private KeyValuePair<tkey, int?>[] _hashBucket;
-        private tvalue[] _valueList;
+        private int?[] _hashBucket;
+        private tkey[] _keys;
+        private tvalue[] _values;
 
         private int NextValueIndex { get; set; }
 
@@ -37,15 +38,19 @@ namespace Programming.DataStructure
         /// <exception cref="InvalidOperationException"></exception>
         public void Add(tkey key, tvalue value)
         {
+            if (key == default)
+                throw new ArgumentException($"Key cannot be default value for type {typeof(tkey)}", "key");
+
             CheckValueArray();
             CheckHashArray();
 
             var hashIndex = GetHashIndex(key, _hashBucket.Length);
             
-            if (!_hashBucket[hashIndex].Value.HasValue)
+            if (!_hashBucket[hashIndex].HasValue)
             {
-                _hashBucket[hashIndex] = new KeyValuePair<tkey, int?>(key, NextValueIndex);
-                _valueList[NextValueIndex] = value;
+                _hashBucket[hashIndex] = NextValueIndex;
+                _keys[NextValueIndex] = key;
+                _values[NextValueIndex] = value;
                 ++Count;
                 ++NextValueIndex;
             }
@@ -64,10 +69,11 @@ namespace Programming.DataStructure
             var hashIndex = GetHashIndex(key, _hashBucket.Length);
             var valueIndex = _hashBucket[hashIndex];
 
-            if (!valueIndex.Value.HasValue)
+            if (!valueIndex.HasValue)
                 throw new InvalidOperationException("Does not contain key");
 
-            _valueList[valueIndex.Value.Value] = default;
+            _values[valueIndex.Value] = default;
+            _keys[valueIndex.Value] = default;
             _hashBucket[hashIndex] = default;
             --Count;
         }
@@ -87,8 +93,9 @@ namespace Programming.DataStructure
         {
             Count = 0;
             NextValueIndex = 0;
-            _hashBucket = new KeyValuePair<tkey, int?>[128];
-            _valueList = new tvalue[5];
+            _hashBucket = new int?[128];
+            _values = new tvalue[15];
+            _keys = new tkey[15];
         }
 
         /// <summary>
@@ -98,26 +105,25 @@ namespace Programming.DataStructure
         {
             if (_hashBucket.Length - Count <= 5)
             {
-                //TODO: figure out a better way of increasing bucket limit size instead of doubling
-                var placeHolder = new KeyValuePair<tkey, int?>[_hashBucket.Length * 2];
-                CopyHashArray(_hashBucket, placeHolder);
-                _hashBucket = placeHolder;
+                IncreaseHashBucket();
             }
         }
 
         /// <summary>
-        /// Copys the current hash table and regrabs the hash index
+        /// Increases the hash bucket size and populates it with the current keys
         /// </summary>
-        /// <param name="primary"></param>
-        /// <param name="secondary"></param>
-        private void CopyHashArray(KeyValuePair<tkey, int?>[] primary, KeyValuePair<tkey, int?>[] secondary)
+        private void IncreaseHashBucket()
         {
-            Parallel.For(0, primary.Length, (i) =>
+            _hashBucket = new int?[_hashBucket.Length * 2];
+
+            Parallel.For(0, _keys.Length, (i) =>
             {
-                if (primary[i].Value.HasValue)
+                if (_keys[i] != null)
                 {
-                    var hashIndex = GetHashIndex(primary[i].Key, secondary.Length);
-                    secondary[hashIndex] = primary[i];
+                    var hashIndex = GetHashIndex(_keys[i], _hashBucket.Length);
+
+                    //i is the same index for the value the key is tied to 
+                    _hashBucket[hashIndex] = i;
                 }
             });
         }
@@ -127,12 +133,24 @@ namespace Programming.DataStructure
         /// </summary>
         private void CheckValueArray()
         {
-            if (_valueList.Length - Count <= 5)
+            if (_values.Length - Count <= 5)
             {
-                var placeHolder = new tvalue[_valueList.Length * 2];
-                Array.Copy(_valueList, 0, placeHolder, 0, _valueList.Length); //Can't really get faster than Array.Copy();
-                _valueList = placeHolder;
+                IncreaseValueAndKeyArrays();
             }
+        }
+
+        /// <summary>
+        /// Increases the size of the value and key arrays
+        /// </summary>
+        private void IncreaseValueAndKeyArrays()
+        {
+            var placeHolder = new tvalue[_values.Length * 2];
+            Array.Copy(_values, 0, placeHolder, 0, _values.Length); //Can't really get faster than Array.Copy();
+            _values = placeHolder;
+
+            var keyHolder = new tkey[_keys.Length * 2];
+            Array.Copy(_keys, 0, keyHolder, 0, _keys.Length);
+            _keys = keyHolder;
         }
 
         /// <summary>
@@ -146,10 +164,10 @@ namespace Programming.DataStructure
             var hashIndex = GetHashIndex(key, _hashBucket.Length);
             var valueIndex = _hashBucket[hashIndex];
 
-            if (!valueIndex.Value.HasValue)
+            if (!valueIndex.HasValue)
                 throw new InvalidOperationException("Does not contain key");
 
-            return _valueList[valueIndex.Value.Value];
+            return _values[valueIndex.Value];
         }
 
         /// <summary>
@@ -172,11 +190,11 @@ namespace Programming.DataStructure
         /// <returns></returns>
         IEnumerator<KeyValuePair<tkey, tvalue>> IEnumerable<KeyValuePair<tkey, tvalue>>.GetEnumerator()
         {
-            for (int i = 0; i < _hashBucket.Length; i++)
+            for (int i = 0; i < _keys.Length; i++)
             {
-                if (!_hashBucket[i].Value.HasValue) continue;
+                if (_keys[i] == default) continue;
 
-                yield return new KeyValuePair<tkey, tvalue>(_hashBucket[i].Key, _valueList[_hashBucket[i].Value.Value]);
+                yield return new KeyValuePair<tkey, tvalue>(_keys[i], _values[i]);
             }
         }
 

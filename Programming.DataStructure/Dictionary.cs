@@ -5,7 +5,7 @@ using System.Collections;
 
 namespace Programming.DataStructure
 {
-    public class Dictionary<tkey, tvalue> : IEnumerable<KeyValuePair<tkey, tvalue>>
+    public class Dictionary<tkey, tvalue> : IDictionary<tkey, tvalue>
     {
         private int?[] _hashBucket;
         private tkey[] _keys;
@@ -13,6 +13,9 @@ namespace Programming.DataStructure
 
         private int NextValueIndex { get; set; }
 
+        /// <summary>
+        /// Returns current count of items in dictionary
+        /// </summary>
         public int Count { get; private set; }
 
         public Dictionary()
@@ -28,6 +31,7 @@ namespace Programming.DataStructure
         public tvalue this[tkey key]
         {
             get { return GetValue(key); }
+            set { ChangeValue(key, value); }
         }
 
         /// <summary>
@@ -66,15 +70,11 @@ namespace Programming.DataStructure
         /// <param name="key"></param>
         public void Remove(tkey key)
         {
-            var hashIndex = GetHashIndex(key, _hashBucket.Length);
-            var valueIndex = _hashBucket[hashIndex];
+            var indexes = GetKeyValueIndexes(key);
 
-            if (!valueIndex.HasValue)
-                throw new InvalidOperationException("Does not contain key");
-
-            _values[valueIndex.Value] = default;
-            _keys[valueIndex.Value] = default;
-            _hashBucket[hashIndex] = default;
+            _values[indexes.Value] = default;
+            _keys[indexes.Value] = default;
+            _hashBucket[indexes.Key] = default;
             --Count;
         }
 
@@ -161,13 +161,8 @@ namespace Programming.DataStructure
         /// <exception cref="InvalidOperationException"></exception>
         private tvalue GetValue(tkey key)
         {
-            var hashIndex = GetHashIndex(key, _hashBucket.Length);
-            var valueIndex = _hashBucket[hashIndex];
-
-            if (!valueIndex.HasValue)
-                throw new InvalidOperationException("Does not contain key");
-
-            return _values[valueIndex.Value];
+            var indexes = GetKeyValueIndexes(key);
+            return _values[indexes.Value];
         }
 
         /// <summary>
@@ -182,6 +177,36 @@ namespace Programming.DataStructure
             var hashIndex = keyHash % maxLength;
 
             return hashIndex;
+        }
+
+        /// <summary>
+        /// Changes the value for the given key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        private void ChangeValue(tkey key, tvalue value)
+        {
+            var indexes = GetKeyValueIndexes(key);
+            _values[indexes.Value] = value;
+        }
+
+        /// <summary>
+        /// Returns a key value pair of int int with the key as the hash index and the value being the value index
+        /// </summary>
+        /// <remarks>
+        /// Made this so grabbing of id's is consistent
+        /// </remarks>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private KeyValuePair<int, int> GetKeyValueIndexes(tkey key)
+        {
+            var hashIndex = GetHashIndex(key, _hashBucket.Length);
+            var valueIndex = _hashBucket[hashIndex];
+
+            if (!valueIndex.HasValue)
+                throw new InvalidOperationException("Does not contain key");
+
+            return new KeyValuePair<int, int>(hashIndex, valueIndex.Value);
         }
 
         /// <summary>

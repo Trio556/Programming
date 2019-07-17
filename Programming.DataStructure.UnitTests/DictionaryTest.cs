@@ -87,5 +87,24 @@ namespace Programming.DataStructure.UnitTests
 
             Assert.Equal(0, newDictionary.Count);
         }
+
+        [Fact]
+        public void Dictionary_GetValueFromIndexer()
+        {
+            var newDictionary = new Dictionary<string, string>();
+            newDictionary.Add("a", "b");
+
+            Assert.Equal("b", newDictionary["a"]);
+        }
+
+        [Fact]
+        public void Dictionary_SetValueFromIndexer()
+        {
+            var newDictionary = new Dictionary<string, string>();
+            newDictionary.Add("a", "b");
+            newDictionary["a"] = "c";
+
+            Assert.Equal("c", newDictionary["a"]);
+        }
     }
 }

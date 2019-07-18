@@ -5,6 +5,11 @@ using System.Collections;
 
 namespace Programming.DataStructure
 {
+    /// <summary>
+    /// Implementation of a simple dictionary
+    /// </summary>
+    /// <typeparam name="tkey"></typeparam>
+    /// <typeparam name="tvalue"></typeparam>
     public class Dictionary<tkey, tvalue> : IDictionary<tkey, tvalue>
     {
         private int?[] _hashBucket;

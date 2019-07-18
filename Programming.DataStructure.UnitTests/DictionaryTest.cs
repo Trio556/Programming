@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 
@@ -105,6 +106,26 @@ namespace Programming.DataStructure.UnitTests
             newDictionary["a"] = "c";
 
             Assert.Equal("c", newDictionary["a"]);
+        }
+
+        [Fact]
+        public void Dictionary_KeyAlreadyExists_ThrowsInvalidOperationException()
+        {
+            var newDictionary = new Dictionary<string, string>();
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                newDictionary.Add("a", "b");
+                newDictionary.Add("a", "c");
+            });
+        }
+
+        [Fact]
+        public void Dictionary_NoKeyAtIndex_ThrowsInvalidOperationException()
+        {
+            var newDictionary = new Dictionary<string, string>();
+
+            Assert.Throws<InvalidOperationException>(() => newDictionary["a"] = "b");
         }
     }
 }

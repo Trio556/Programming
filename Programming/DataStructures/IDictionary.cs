@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Programming.DataStructure
+namespace Programming.DataStructures
 {
     public interface IDictionary<tkey, tvalue> : IEnumerable<KeyValuePair<tkey, tvalue>>
     {

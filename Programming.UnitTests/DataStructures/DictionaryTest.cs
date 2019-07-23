@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Programming.DataStructures;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 
-namespace Programming.DataStructure.UnitTests
+namespace Programming.UnitTests.DataStructures
 {
     [ExcludeFromCodeCoverage]
     public class DictionaryTest

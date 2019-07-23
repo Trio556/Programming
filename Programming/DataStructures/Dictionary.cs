@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections;
 
-namespace Programming.DataStructure
+namespace Programming.DataStructures
 {
     /// <summary>
     /// Implementation of a simple dictionary
